@@ -4,6 +4,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/roushou/pocpoc/internal/models"
 	"github.com/roushou/pocpoc/internal/security"
 )
 
@@ -13,6 +14,11 @@ const userIDKey userIDContextKey = "userID"
 
 // jwtCookieName is the cookie name in which JWTs are stored.
 const jwtCookieName = "token"
+
+type authUser struct {
+	UserID uuid.UUID
+	Role   models.Role
+}
 
 func AuthMiddleware(secret string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -40,8 +46,8 @@ func AuthMiddleware(secret string) echo.MiddlewareFunc {
 				return echo.ErrUnauthorized
 			}
 
-			// Set user ID in context for use in handlers
-			rc.Set(string(userIDKey), claims.UserID)
+			// Set auth user in context for use in handlers
+			rc.Set(string(userIDKey), authUser{UserID: claims.UserID, Role: claims.Role})
 			return next(rc)
 		}
 	}

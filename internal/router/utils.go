@@ -3,14 +3,13 @@ package router
 import (
 	"errors"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
-func getUserID(ctx echo.Context) (uuid.UUID, error) {
-	userID, ok := ctx.Get(string(userIDKey)).(uuid.UUID)
+func getAuthUser(ctx echo.Context) (*authUser, error) {
+	authUser, ok := ctx.Get(string(userIDKey)).(authUser)
 	if !ok {
-		return uuid.Nil, errors.New("invalid user UUID")
+		return nil, errors.New("failed to retrieve auth user")
 	}
-	return userID, nil
+	return &authUser, nil
 }

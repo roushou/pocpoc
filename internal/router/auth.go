@@ -27,7 +27,8 @@ func bindAuthRouter(router *echo.Group) {
 
 type JWTClaims struct {
 	jwt.RegisteredClaims
-	UserID uuid.UUID `json:"userID"`
+	UserID uuid.UUID   `json:"userID"`
+	Role   models.Role `json:"role"`
 }
 
 func signIn(ctx echo.Context) error {
@@ -61,7 +62,8 @@ func signIn(ctx echo.Context) error {
 		return echo.ErrInternalServerError
 	}
 
-	token, err := security.NewJWT(JWTClaims{UserID: user.ID}, jwtSecretKey, jwtExpiration)
+	claims := JWTClaims{UserID: user.ID, Role: user.Role}
+	token, err := security.NewJWT(claims, jwtSecretKey, jwtExpiration)
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
@@ -80,6 +82,7 @@ func signUp(ctx echo.Context) error {
 	payload := struct {
 		Username string      `json:"username" validate:"required"`
 		Password string      `json:"password" validate:"required"`
+		Role     models.Role `json:"role" validate:"required"`
 	}{}
 	if err := ctx.Bind(&payload); err != nil {
 		return echo.ErrBadRequest
@@ -98,6 +101,7 @@ func signUp(ctx echo.Context) error {
 	user := &models.User{
 		Username:     payload.Username,
 		PasswordHash: hashedPassword,
+		Role:         payload.Role,
 	}
 	tx := db.Create(user)
 	if tx.Error != nil {
@@ -107,7 +111,8 @@ func signUp(ctx echo.Context) error {
 		return echo.ErrInternalServerError
 	}
 
-	token, err := security.NewJWT(&JWTClaims{UserID: user.ID}, jwtSecretKey, jwtExpiration)
+	claims := &JWTClaims{UserID: user.ID, Role: user.Role}
+	token, err := security.NewJWT(claims, jwtSecretKey, jwtExpiration)
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
