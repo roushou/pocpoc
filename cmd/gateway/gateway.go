@@ -18,7 +18,7 @@ func main() {
 	}
 
 	ctx := context.Background()
-	db, err := gorm.Open(sqlite.Open(config.DatabaseName), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(config.DatabaseName), &gorm.Config{TranslateError: true})
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}

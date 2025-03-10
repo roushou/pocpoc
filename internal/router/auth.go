@@ -98,6 +98,9 @@ func signUp(ctx echo.Context) error {
 	}
 	tx := db.Create(user)
 	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrDuplicatedKey) {
+			return echo.ErrConflict
+		}
 		return echo.ErrInternalServerError
 	}
 
