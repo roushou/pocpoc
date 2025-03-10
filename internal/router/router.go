@@ -14,7 +14,7 @@ type routerContext struct {
 }
 
 func (ctx *routerContext) GetDatabase() *gorm.DB {
-	return *&ctx.database
+	return ctx.database
 }
 
 // withRouterContext extends echo.Context by setting up Services into it.
