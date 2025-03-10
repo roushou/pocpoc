@@ -67,7 +67,7 @@ func signIn(ctx echo.Context) error {
 	}
 
 	ctx.SetCookie(&http.Cookie{
-		Name:     "token",
+		Name:     jwtCookieName,
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
@@ -107,7 +107,7 @@ func signUp(ctx echo.Context) error {
 	}
 
 	ctx.SetCookie(&http.Cookie{
-		Name:     "token",
+		Name:     jwtCookieName,
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,

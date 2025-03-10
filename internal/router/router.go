@@ -49,5 +49,8 @@ func NewRouter(database *gorm.DB) *echo.Echo {
 	bindHealthRouter(group)
 	bindAuthRouter(group)
 
+	// Need auth
+	restricted := group.Group("")
+	restricted.Use(AuthMiddleware(jwtSecretKey))
 	return router
 }
