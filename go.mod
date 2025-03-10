@@ -3,6 +3,8 @@ module github.com/roushou/pocpoc
 go 1.23.6
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.13.3
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12

@@ -47,5 +47,7 @@ func NewRouter(database *gorm.DB) *echo.Echo {
 
 	// Routers
 	bindHealthRouter(group)
+	bindAuthRouter(group)
+
 	return router
 }
