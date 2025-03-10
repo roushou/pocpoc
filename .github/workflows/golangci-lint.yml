@@ -1,22 +1,25 @@
-name: Lint
+name: golangci-lint
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 permissions:
   contents: read
+  # Optional: allow read access to pull request. Use with `only-new-issues` option.
+  # pull-requests: read
 
 jobs:
   golangci:
-    name: Lint
+    name: lint
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout ode
         uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: stable
@@ -24,4 +27,4 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.60
+          version: v1.64
