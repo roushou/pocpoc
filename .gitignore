@@ -1,0 +1,5 @@
+# outputs
+db.sqlite
+
+# environment variables
+.env
