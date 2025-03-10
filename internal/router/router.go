@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/gorm"
@@ -31,6 +32,8 @@ func withRouterContext(database *gorm.DB) echo.MiddlewareFunc {
 
 func NewRouter(database *gorm.DB) *echo.Echo {
 	router := echo.New()
+	router.Validator = &Validator{validator: validator.New()}
+
 	group := router.Group("/api")
 
 	// Middlewares
@@ -53,4 +56,15 @@ func NewRouter(database *gorm.DB) *echo.Echo {
 	restricted := group.Group("")
 	restricted.Use(AuthMiddleware(jwtSecretKey))
 	return router
+}
+
+type Validator struct {
+	validator *validator.Validate
+}
+
+func (v *Validator) Validate(i interface{}) error {
+	if err := v.validator.Struct(i); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return nil
 }

@@ -78,11 +78,14 @@ func signIn(ctx echo.Context) error {
 
 func signUp(ctx echo.Context) error {
 	payload := struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
+		Username string      `json:"username" validate:"required"`
+		Password string      `json:"password" validate:"required"`
 	}{}
 	if err := ctx.Bind(&payload); err != nil {
 		return echo.ErrBadRequest
+	}
+	if err := ctx.Validate(&payload); err != nil {
+		return err
 	}
 
 	hashedPassword, err := security.HashPassword(payload.Password)
