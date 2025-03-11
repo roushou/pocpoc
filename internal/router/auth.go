@@ -76,7 +76,7 @@ func signInOwner(ctx echo.Context) error {
 		HttpOnly: true,
 	})
 
-	return ctx.String(http.StatusOK, "OK")
+	return ctx.JSON(http.StatusOK, map[string]string{"message": "success"})
 }
 
 func signInStaff(ctx echo.Context) error {
@@ -123,7 +123,7 @@ func signInStaff(ctx echo.Context) error {
 		HttpOnly: true,
 	})
 
-	return ctx.String(http.StatusOK, "OK")
+	return ctx.JSON(http.StatusOK, map[string]string{"message": "success"})
 }
 
 func signUpOwner(ctx echo.Context) error {

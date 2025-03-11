@@ -3,6 +3,7 @@ package router
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -18,6 +19,15 @@ func bindRestaurantsRouter(router *echo.Group) {
 	group.POST("/:restaurant_id/staff", registerStaff)
 }
 
+// RestaurantResponse maps fields of Restaurant model we are willing to expose.
+type RestaurantResponse struct {
+	RestaurantID uuid.UUID `json:"restaurant_id"`
+	OwnerID      uuid.UUID `json:"owner_id"`
+	Name         string    `json:"name"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
 func getRestaurantById(ctx echo.Context) error {
 	_, err := getAuthUser(ctx)
 	if err != nil {
@@ -29,16 +39,24 @@ func getRestaurantById(ctx echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	restaurant := &models.Restaurant{}
+	row := &models.Restaurant{}
 
 	db := ctx.(*routerContext).GetDatabase()
 	// Need to do this way to prevent SQL injections
-	tx := db.Connection.First(restaurant, "id = ?", restaurantID)
+	tx := db.Connection.First(row, "id = ?", restaurantID)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return echo.ErrNotFound
 		}
 		return echo.ErrInternalServerError
+	}
+
+	restaurant := &RestaurantResponse{
+		RestaurantID: row.ID,
+		OwnerID:      row.OwnerID,
+		Name:         row.Name,
+		CreatedAt:    row.CreatedAt,
+		UpdatedAt:    row.UpdatedAt,
 	}
 
 	return ctx.JSON(http.StatusOK, restaurant)
@@ -74,7 +92,9 @@ func registerRestaurant(ctx echo.Context) error {
 		return echo.ErrInternalServerError
 	}
 
-	return ctx.JSON(http.StatusCreated, restaurant)
+	return ctx.JSON(http.StatusCreated, map[string]string{
+		"restaurant_id": restaurant.ID.String(),
+	})
 }
 
 func registerStaff(ctx echo.Context) error {
@@ -148,5 +168,7 @@ func registerStaff(ctx echo.Context) error {
 		HttpOnly: true,
 	})
 
-	return ctx.JSON(http.StatusCreated, map[string]string{"message": "success"})
+	return ctx.JSON(http.StatusCreated, map[string]string{
+		"restaurant_id": restaurantID.String(),
+	})
 }

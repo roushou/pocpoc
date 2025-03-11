@@ -19,7 +19,7 @@ func bindProductsRouter(router *echo.Group) {
 
 // ProductResponse maps fields of Product model we are willing to expose.
 type ProductResponse struct {
-	ID           uuid.UUID `json:"product_id"`
+	ProductID    uuid.UUID `json:"product_id"`
 	RestaurantID uuid.UUID `json:"restaurant_id"`
 	Title        string    `json:"title"`
 	Description  string    `json:"description"`
@@ -65,7 +65,7 @@ func getProducts(ctx echo.Context) error {
 
 	for _, product := range rows {
 		products = append(products, ProductResponse{
-			ID:           product.ID,
+			ProductID:    product.ID,
 			RestaurantID: product.RestaurantID,
 			Title:        product.Title,
 			Description:  product.Description,
