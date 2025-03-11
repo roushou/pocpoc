@@ -21,8 +21,9 @@ const jwtExpiration = 24 * time.Hour
 
 func bindAuthRouter(router *echo.Group) {
 	group := router.Group("/auth")
-	group.POST("/sign-in", signIn)
-	group.POST("/sign-up", signUp)
+	group.POST("/owners/sign-up", signUpOwner)
+	group.POST("/owners/sign-in", signInOwner)
+	group.POST("/staff/sign-in", signInStaff)
 }
 
 type JWTClaims struct {
@@ -31,7 +32,7 @@ type JWTClaims struct {
 	Role   models.Role `json:"role"`
 }
 
-func signIn(ctx echo.Context) error {
+func signInOwner(ctx echo.Context) error {
 	payload := struct {
 		Username string `json:"username" validate:"required"`
 		Password string `json:"password" validate:"required"`
@@ -50,11 +51,11 @@ func signIn(ctx echo.Context) error {
 
 	db := ctx.(*routerContext).GetDatabase()
 
-	user := &models.User{
+	owner := &models.Owner{
 		Username:     payload.Username,
 		PasswordHash: hashedPassword,
 	}
-	tx := db.First(user)
+	tx := db.First(owner)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return echo.ErrNotFound
@@ -62,7 +63,7 @@ func signIn(ctx echo.Context) error {
 		return echo.ErrInternalServerError
 	}
 
-	claims := JWTClaims{UserID: user.ID, Role: user.Role}
+	claims := JWTClaims{UserID: owner.ID, Role: models.RoleOwner}
 	token, err := security.NewJWT(claims, jwtSecretKey, jwtExpiration)
 	if err != nil {
 		return echo.ErrInternalServerError
@@ -78,11 +79,57 @@ func signIn(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "OK")
 }
 
-func signUp(ctx echo.Context) error {
+func signInStaff(ctx echo.Context) error {
 	payload := struct {
-		Username string      `json:"username" validate:"required"`
-		Password string      `json:"password" validate:"required"`
-		Role     models.Role `json:"role" validate:"required"`
+		Username string `json:"username" validate:"required"`
+		Password string `json:"password" validate:"required"`
+	}{}
+	if err := ctx.Bind(&payload); err != nil {
+		return echo.ErrBadRequest
+	}
+	if err := ctx.Validate(&payload); err != nil {
+		return echo.ErrBadRequest
+	}
+
+	hashedPassword, err := security.HashPassword(payload.Password)
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	db := ctx.(*routerContext).GetDatabase()
+
+	staff := &models.Staff{
+		Username:     payload.Username,
+		PasswordHash: hashedPassword,
+	}
+	tx := db.First(staff)
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			return echo.ErrNotFound
+		}
+		return echo.ErrInternalServerError
+	}
+
+	claims := JWTClaims{UserID: staff.ID, Role: models.RoleStaff}
+	token, err := security.NewJWT(claims, jwtSecretKey, jwtExpiration)
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	ctx.SetCookie(&http.Cookie{
+		Name:     jwtCookieName,
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+	})
+
+	return ctx.String(http.StatusOK, "OK")
+}
+
+func signUpOwner(ctx echo.Context) error {
+	payload := struct {
+		Username string `json:"username" validate:"required"`
+		Password string `json:"password" validate:"required"`
 	}{}
 	if err := ctx.Bind(&payload); err != nil {
 		return echo.ErrBadRequest
@@ -98,10 +145,9 @@ func signUp(ctx echo.Context) error {
 
 	db := ctx.(*routerContext).GetDatabase()
 
-	user := &models.User{
+	user := &models.Owner{
 		Username:     payload.Username,
 		PasswordHash: hashedPassword,
-		Role:         payload.Role,
 	}
 	tx := db.Create(user)
 	if tx.Error != nil {
@@ -111,7 +157,7 @@ func signUp(ctx echo.Context) error {
 		return echo.ErrInternalServerError
 	}
 
-	claims := &JWTClaims{UserID: user.ID, Role: user.Role}
+	claims := &JWTClaims{UserID: user.ID, Role: models.RoleOwner}
 	token, err := security.NewJWT(claims, jwtSecretKey, jwtExpiration)
 	if err != nil {
 		return echo.ErrInternalServerError

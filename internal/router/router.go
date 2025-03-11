@@ -55,6 +55,8 @@ func NewRouter(database *gorm.DB) *echo.Echo {
 	// Need auth
 	restricted := group.Group("")
 	restricted.Use(AuthMiddleware(jwtSecretKey))
+	bindRestaurantsRouter(restricted)
+
 	return router
 }
 

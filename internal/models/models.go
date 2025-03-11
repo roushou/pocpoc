@@ -12,16 +12,53 @@ const (
 	RoleStaff Role = "staff"
 )
 
-type User struct {
+type Owner struct {
 	gorm.Model
 	ID           uuid.UUID `gorm:"type:uuid;primaryKey"`
-	Username     string
-	PasswordHash string
-	Role         Role      `gorm:"not null"` // Roles: 'owner' or 'staff'
+	Username     string    `gorm:"not null; unique"`
+	PasswordHash string    `gorm:"not null"`
 }
 
-func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	userID, err := uuid.NewV7()
-	u.ID = userID
+func (o *Owner) BeforeCreate(tx *gorm.DB) (err error) {
+	ID, err := uuid.NewV7()
+	if err != nil {
+		return
+	}
+	o.ID = ID
+	return
+}
+
+type Staff struct {
+	gorm.Model
+	ID           uuid.UUID  `gorm:"type:uuid;primaryKey"`
+	RestaurantID uuid.UUID  `gorm:"type:uuid;not null"`
+	Username     string     `gorm:"not null"`
+	PasswordHash string     `gorm:"not null"`
+	Restaurant   Restaurant `gorm:"foreignKey:RestaurantID;references:ID"`
+}
+
+func (s *Staff) BeforeCreate(tx *gorm.DB) (err error) {
+	ID, err := uuid.NewV7()
+	if err != nil {
+		return
+	}
+	s.ID = ID
+	return
+}
+
+type Restaurant struct {
+	gorm.Model
+	ID      uuid.UUID `gorm:"type:uuid;primaryKey"`
+	OwnerID uuid.UUID `gorm:"type:uuid;not null"`
+	Name    string    `gorm:"not null"`
+	Owner   Owner     `gorm:"foreignKey:OwnerID;references:ID"`
+}
+
+func (r *Restaurant) BeforeCreate(tx *gorm.DB) (err error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return
+	}
+	r.ID = id
 	return
 }
