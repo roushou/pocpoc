@@ -62,3 +62,21 @@ func (r *Restaurant) BeforeCreate(tx *gorm.DB) (err error) {
 	r.ID = id
 	return
 }
+
+type Product struct {
+	gorm.Model
+	ID           uuid.UUID  `gorm:"type:uuid;primaryKey"`
+	RestaurantID uuid.UUID  `gorm:"type:uuid;not null"`
+	Title        string     `gorm:"not null"`
+	Description  string     `gorm:"not null"`
+	Restaurant   Restaurant `gorm:"foreignKey:RestaurantID;references:ID"`
+}
+
+func (p *Product) BeforeCreate(tx *gorm.DB) (err error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return
+	}
+	p.ID = id
+	return
+}

@@ -65,8 +65,18 @@ func seedDatabase(db *gorm.DB) error {
 	}
 
 	// Add staff
-	staff1 := &models.Staff{Username: "Taiku", PasswordHash: "1234", RestaurantID: restaurant1.ID}
+	staff1 := &models.Staff{Username: "Taiju", PasswordHash: "1234", RestaurantID: restaurant1.ID}
 	if err := db.Create(staff1).Error; err != nil {
+		return err
+	}
+
+	// Add products
+	product1 := &models.Product{
+		Title:        "Wagyu Beef",
+		Description:  "Tender wagyu beef",
+		RestaurantID: restaurant1.ID,
+	}
+	if err := db.Create(product1).Error; err != nil {
 		return err
 	}
 
