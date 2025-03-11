@@ -55,7 +55,7 @@ func signInOwner(ctx echo.Context) error {
 		Username:     payload.Username,
 		PasswordHash: hashedPassword,
 	}
-	tx := db.First(owner)
+	tx := db.Connection.First(owner)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return echo.ErrNotFound
@@ -102,7 +102,7 @@ func signInStaff(ctx echo.Context) error {
 		Username:     payload.Username,
 		PasswordHash: hashedPassword,
 	}
-	tx := db.First(staff)
+	tx := db.Connection.First(staff)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return echo.ErrNotFound
@@ -149,7 +149,7 @@ func signUpOwner(ctx echo.Context) error {
 		Username:     payload.Username,
 		PasswordHash: hashedPassword,
 	}
-	tx := db.Create(user)
+	tx := db.Connection.Create(user)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrDuplicatedKey) {
 			return echo.ErrConflict

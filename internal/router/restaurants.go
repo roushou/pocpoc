@@ -33,7 +33,7 @@ func getRestaurantById(ctx echo.Context) error {
 
 	db := ctx.(*routerContext).GetDatabase()
 	// Need to do this way to prevent SQL injections
-	tx := db.First(restaurant, "id = ?", restaurantID)
+	tx := db.Connection.First(restaurant, "id = ?", restaurantID)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return echo.ErrNotFound
@@ -66,7 +66,7 @@ func registerRestaurant(ctx echo.Context) error {
 		Name:    payload.Name,
 		OwnerID: authUser.UserID,
 	}
-	tx := db.Create(restaurant)
+	tx := db.Connection.Create(restaurant)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrDuplicatedKey) {
 			return echo.ErrConflict
@@ -110,7 +110,7 @@ func registerStaff(ctx echo.Context) error {
 		ID:      restaurantID,
 		OwnerID: authUser.UserID,
 	}
-	if err := db.First(restaurant).Error; err != nil {
+	if err := db.Connection.First(restaurant).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return echo.ErrUnauthorized
 		}
@@ -127,7 +127,7 @@ func registerStaff(ctx echo.Context) error {
 		Username:     payload.Username,
 		PasswordHash: hashedPassword,
 	}
-	tx := db.Create(staff)
+	tx := db.Connection.Create(staff)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrDuplicatedKey) {
 			return echo.ErrConflict

@@ -6,22 +6,22 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"gorm.io/gorm"
+	"github.com/roushou/pocpoc/internal/database"
 )
 
 type routerContext struct {
 	echo.Context
-	database *gorm.DB
+	database *database.Database
 }
 
-func (ctx *routerContext) GetDatabase() *gorm.DB {
+func (ctx *routerContext) GetDatabase() *database.Database {
 	return ctx.database
 }
 
 // withRouterContext extends echo.Context by setting up Services into it.
 //
 // IMPORTANT: This middleware should be called before any other middlewares and routers.
-func withRouterContext(database *gorm.DB) echo.MiddlewareFunc {
+func withRouterContext(database *database.Database) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			rc := &routerContext{Context: ctx, database: database}
@@ -30,7 +30,7 @@ func withRouterContext(database *gorm.DB) echo.MiddlewareFunc {
 	}
 }
 
-func NewRouter(database *gorm.DB) *echo.Echo {
+func NewRouter(database *database.Database) *echo.Echo {
 	router := echo.New()
 	router.Validator = &Validator{validator: validator.New()}
 

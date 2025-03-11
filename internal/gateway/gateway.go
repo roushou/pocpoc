@@ -11,8 +11,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/roushou/pocpoc/internal/router"
-	"gorm.io/gorm"
 )
 
 const defaultAddr = ":8080"
@@ -52,7 +50,7 @@ type Gateway struct {
 }
 
 // NewGateway initializes and configures a new Gateway instance with the provided options.
-func NewGateway(database *gorm.DB, opts ...Option) (*Gateway, error) {
+func NewGateway(router *echo.Echo, opts ...Option) (*Gateway, error) {
 	options := &options{
 		addr:            defaultAddr,
 		shutdownTimeout: defaultShutdownTimeout,
@@ -64,7 +62,7 @@ func NewGateway(database *gorm.DB, opts ...Option) (*Gateway, error) {
 		}
 	}
 	return &Gateway{
-		router:          router.NewRouter(database),
+		router:          router,
 		addr:            options.addr,
 		shutdownTimeout: options.shutdownTimeout,
 	}, nil
