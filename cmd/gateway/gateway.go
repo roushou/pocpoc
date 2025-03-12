@@ -30,7 +30,10 @@ func main() {
 
 	seedDatabase(db.Connection)
 
-	router := router.NewRouter(db)
+	router, err := router.NewRouter(db, router.WithAllowedOrigins(config.AllowedOrigins))
+	if err != nil {
+		log.Fatalf("failed to create router: %v", err)
+	}
 
 	gateway, err := gateway.NewGateway(router, gateway.WithAddr(config.GatewayAddr))
 	if err != nil {

@@ -3,15 +3,23 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 type Config struct {
-	GatewayAddr  string
-	DatabaseName string
+	AllowedOrigins []string
+	GatewayAddr    string
+	DatabaseName   string
 }
 
 // LoadConfig loads all required configuration from environment variables.
 func LoadConfig() (*Config, error) {
+	allowedOriginsStr, ok := os.LookupEnv("ALLOWED_ORIGINS")
+	if !ok {
+		return nil, fmt.Errorf("environment variable 'DATABASE_NAME' not found")
+	}
+	allowedOrigins := strings.Split(allowedOriginsStr, ",")
+
 	gatewayAddr, ok := os.LookupEnv("GATEWAY_ADDR")
 	if !ok {
 		return nil, fmt.Errorf("environment variable 'GATEWAY_ADDR' not found")
@@ -22,7 +30,8 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
-		GatewayAddr:  gatewayAddr,
-		DatabaseName: dbName,
+		AllowedOrigins: allowedOrigins,
+		GatewayAddr:    gatewayAddr,
+		DatabaseName:   dbName,
 	}, nil
 }

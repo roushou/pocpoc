@@ -9,6 +9,8 @@ import (
 	"github.com/roushou/pocpoc/internal/database"
 )
 
+var defaultAllowedOrigins = []string{}
+
 type routerContext struct {
 	echo.Context
 	database *database.Database
@@ -30,7 +32,31 @@ func withRouterContext(database *database.Database) echo.MiddlewareFunc {
 	}
 }
 
-func NewRouter(database *database.Database) *echo.Echo {
+// Option defines the function signature for router options.
+type Option func(options *options) error
+
+type options struct {
+	allowedOrigins []string
+}
+
+func WithAllowedOrigins(origins []string) Option {
+	return func(options *options) error {
+		options.allowedOrigins = origins
+		return nil
+	}
+}
+
+func NewRouter(database *database.Database, opts ...Option) (*echo.Echo, error) {
+	options := &options{
+		allowedOrigins: defaultAllowedOrigins,
+	}
+	for _, opt := range opts {
+		err := opt(options)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	router := echo.New()
 	router.Validator = &Validator{validator: validator.New()}
 
@@ -39,8 +65,7 @@ func NewRouter(database *database.Database) *echo.Echo {
 	// Middlewares
 	group.Use(withRouterContext(database)) // !!! This middleware should be called before anything else
 	group.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		// TODO: Load from configuration
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     options.allowedOrigins,
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
 		AllowCredentials: true,
@@ -59,7 +84,7 @@ func NewRouter(database *database.Database) *echo.Echo {
 	bindProductsRouter(restricted)
 	bindOrdersRouter(restricted)
 
-	return router
+	return router, nil
 }
 
 type Validator struct {
