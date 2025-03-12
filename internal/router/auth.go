@@ -44,23 +44,19 @@ func signInOwner(ctx echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	hashedPassword, err := security.HashPassword(payload.Password)
-	if err != nil {
-		return echo.ErrInternalServerError
-	}
-
 	db := ctx.(*routerContext).GetDatabase()
 
-	owner := &models.Owner{
-		Username:     payload.Username,
-		PasswordHash: hashedPassword,
-	}
-	tx := db.Connection.First(owner)
+	owner := &models.Owner{}
+	tx := db.Connection.Where(&models.Owner{Username: payload.Username}).First(owner)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return echo.ErrNotFound
 		}
 		return echo.ErrInternalServerError
+	}
+
+	if err := security.VerifyPasswordHash(payload.Password, owner.PasswordHash); err != nil {
+		return echo.ErrUnauthorized
 	}
 
 	claims := JWTClaims{UserID: owner.ID, Role: models.RoleOwner}
@@ -91,23 +87,19 @@ func signInStaff(ctx echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	hashedPassword, err := security.HashPassword(payload.Password)
-	if err != nil {
-		return echo.ErrInternalServerError
-	}
-
 	db := ctx.(*routerContext).GetDatabase()
 
-	staff := &models.Staff{
-		Username:     payload.Username,
-		PasswordHash: hashedPassword,
-	}
-	tx := db.Connection.First(staff)
+	staff := &models.Staff{}
+	tx := db.Connection.Where(&models.Staff{Username: payload.Username}).First(staff)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return echo.ErrNotFound
 		}
 		return echo.ErrInternalServerError
+	}
+
+	if err := security.VerifyPasswordHash(payload.Password, staff.PasswordHash); err != nil {
+		return echo.ErrUnauthorized
 	}
 
 	claims := JWTClaims{UserID: staff.ID, Role: models.RoleStaff}

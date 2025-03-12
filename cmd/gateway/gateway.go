@@ -9,6 +9,7 @@ import (
 	"github.com/roushou/pocpoc/internal/gateway"
 	"github.com/roushou/pocpoc/internal/models"
 	"github.com/roushou/pocpoc/internal/router"
+	"github.com/roushou/pocpoc/internal/security"
 	"gorm.io/gorm"
 )
 
@@ -58,7 +59,8 @@ func seedDatabase(db *gorm.DB) error {
 	}
 
 	// Add owners
-	owner1 := &models.Owner{Username: "Senku", PasswordHash: "strongpassword"}
+	password1, _ := security.HashPassword("strongpassword")
+	owner1 := &models.Owner{Username: "Senku", PasswordHash: password1}
 	db.Create(owner1)
 
 	// Add restaurants
@@ -68,7 +70,8 @@ func seedDatabase(db *gorm.DB) error {
 	}
 
 	// Add staff
-	staff1 := &models.Staff{Username: "Taiju", PasswordHash: "1234", RestaurantID: restaurant1.ID}
+	password2, _ := security.HashPassword("1234")
+	staff1 := &models.Staff{Username: "Taiju", PasswordHash: password2, RestaurantID: restaurant1.ID}
 	if err := db.Create(staff1).Error; err != nil {
 		return err
 	}
