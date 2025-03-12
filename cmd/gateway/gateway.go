@@ -29,7 +29,9 @@ func main() {
 		log.Fatalf("auto migration failed: %v", err)
 	}
 
-	seedDatabase(db.Connection)
+	if err := seedDatabase(db.Connection); err != nil {
+		log.Fatalf("failed to seed database: %v", err)
+	}
 
 	router, err := router.NewRouter(db, router.WithAllowedOrigins(config.AllowedOrigins))
 	if err != nil {
