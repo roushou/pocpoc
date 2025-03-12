@@ -74,6 +74,7 @@ func seedDatabase(db *gorm.DB) error {
 	product1 := &models.Product{
 		Title:        "Wagyu Beef",
 		Description:  "Tender wagyu beef",
+		UnitPrice:    24.9,
 		RestaurantID: restaurant1.ID,
 	}
 	if err := db.Create(product1).Error; err != nil {

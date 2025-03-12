@@ -23,6 +23,7 @@ type ProductResponse struct {
 	RestaurantID uuid.UUID `json:"restaurant_id"`
 	Title        string    `json:"title"`
 	Description  string    `json:"description"`
+	UnitPrice    float64   `json:"unit_price"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
@@ -88,8 +89,9 @@ func registerProduct(ctx echo.Context) error {
 	}
 
 	payload := struct {
-		Title       string `json:"title" validate:"required"`
-		Description string `json:"description" validate:"required"`
+		Title       string  `json:"title" validate:"required"`
+		Description string  `json:"description" validate:"required"`
+		UnitPrice   float64 `json:"unit_price" validate:"required,gte=0"`
 	}{}
 	if err := ctx.Bind(&payload); err != nil {
 		return echo.ErrBadRequest

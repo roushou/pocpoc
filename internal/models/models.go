@@ -69,6 +69,7 @@ type Product struct {
 	RestaurantID uuid.UUID  `gorm:"type:uuid;not null"`
 	Title        string     `gorm:"not null"`
 	Description  string     `gorm:"not null"`
+	UnitPrice    float64    `gorm:"not null"`
 	Restaurant   Restaurant `gorm:"foreignKey:RestaurantID;references:ID"`
 }
 
