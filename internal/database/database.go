@@ -21,5 +21,12 @@ func NewDatabase(databaseName string) (*Database, error) {
 }
 
 func (db *Database) AutoMigrate() error {
-	return db.Connection.AutoMigrate(&models.Owner{}, &models.Restaurant{}, &models.Staff{}, &models.Product{})
+	return db.Connection.AutoMigrate(
+		&models.Owner{},
+		&models.Restaurant{},
+		&models.Staff{},
+		&models.Product{},
+		&models.Order{},
+		&models.OrderItem{},
+	)
 }

@@ -57,6 +57,7 @@ func NewRouter(database *database.Database) *echo.Echo {
 	restricted.Use(AuthMiddleware(jwtSecretKey))
 	bindRestaurantsRouter(restricted)
 	bindProductsRouter(restricted)
+	bindOrdersRouter(restricted)
 
 	return router
 }
